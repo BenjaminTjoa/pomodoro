@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welkom bij Pomodoro.benjamintjoa.nl</title>
     <link rel="icon" href="images/ico.ico" type="image/ico">
-    <!-- Google tag (gtag.js) -->
+
+        <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1VT63J9BE9"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -147,10 +148,11 @@
     <script>
         class PomodoroTimer {
             constructor() {
-                this.timeLeft = 25 * 60;
+                this.timeLeft = localStorage.getItem('timeLeft') ? parseInt(localStorage.getItem('timeLeft')) : 25 * 60;
                 this.totalTime = 25 * 60;
                 this.isRunning = false;
                 this.timer = null;
+                this.lastUpdateTime = Date.now();
 
                 this.timerDisplay = document.querySelector('.timer');
                 this.startPauseBtn = document.querySelector('.start-pause');
@@ -161,6 +163,7 @@
 
                 this.setupEventListeners();
                 this.setupProgressRing();
+                this.updateDisplay();
             }
 
             setupProgressRing() {
@@ -188,6 +191,16 @@
                         this.modeButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
                     });
+                });
+
+                window.addEventListener('beforeunload', () => {
+                    localStorage.setItem('timeLeft', this.timeLeft);
+                });
+
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        localStorage.setItem('timeLeft', this.timeLeft);
+                    }
                 });
             }
 
@@ -217,8 +230,9 @@
             start() {
                 if (!this.isRunning) {
                     this.isRunning = true;
+                    this.lastUpdateTime = Date.now();
                     this.startPauseBtn.textContent = 'Pauze';
-                    this.timer = setInterval(() => this.tick(), 1000);
+                    this.tick();
                 }
             }
 
@@ -226,7 +240,7 @@
                 if (this.isRunning) {
                     this.isRunning = false;
                     this.startPauseBtn.textContent = 'Start';
-                    clearInterval(this.timer);
+                    localStorage.setItem('timeLeft', this.timeLeft);
                 }
             }
 
@@ -234,12 +248,20 @@
                 this.pause();
                 this.timeLeft = this.totalTime;
                 this.updateDisplay();
+                localStorage.setItem('timeLeft', this.timeLeft);
             }
 
             tick() {
+                if (!this.isRunning) return;
+
+                const now = Date.now();
+                const elapsed = Math.floor((now - this.lastUpdateTime) / 1000);
+                this.timeLeft -= elapsed;
+                this.lastUpdateTime = now;
+
                 if (this.timeLeft > 0) {
-                    this.timeLeft--;
                     this.updateDisplay();
+                    setTimeout(() => this.tick(), 1000);
                 } else {
                     this.playAlarm();
                     this.reset();
@@ -257,20 +279,20 @@
 
             playAlarm() {
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('Pomodoro Timer', {
-                        body: 'Tijd is om!',
-                    });
+                    new Notification('Pomodoro Timer', { body: 'Tijd is om!' });
                 }
                 const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLnPI8tiJNwgZX8Pw4pM+CRNQu/3pmkkKDkSz/vCeTAoKPrL//pxNCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJPLH//55NCgk8sf//nk0KCTyx//+eTQoJ');
                 audio.play();
             }
         }
 
-        const pomodoro = new PomodoroTimer();
-
-        if ('Notification' in window) {
+        if ('Notification' in window && Notification.permission !== 'granted') {
             Notification.requestPermission();
         }
+
+        new PomodoroTimer();
     </script>
 </body>
 </html>
+
+
